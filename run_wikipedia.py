@@ -3,7 +3,7 @@ import sys
 import json
 import wikipedia
 import pymongo
-
+import pandas as pd
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -31,7 +31,19 @@ def insert_into_db(qa,topic):
     for x in qa:
         x['topic'] = topic
     dataset.insert_many(qa)
-    print ("done")
+
+    #get all the ids we just created
+    ids = list(dataset.find({'topic':topic},{'_id':True}))
+    print (ids)
+    #make a pandas dataframe with these ids
+    df = pd.DataFrame(ids).rename({'_id':'question_id'},axis=1)
+    #make sure they're mapped to the original db name
+    df['dataset'] = 'WikiNLP'
+    #put these into the collection lookup db
+    records = df.to_dict(orient='records')
+    db['CollectionLookup'].insert_many(records)
+    
+    
     
 def get_questions(text):
     qa = nlp(text)
@@ -43,6 +55,7 @@ def get_text(topic):
     print ("Getting topic: ",topic)
     qa = get_questions(wikipedia.summary(topic))
     insert_into_db(qa,topic)
+    print ('done')
     
 if __name__ == "__main__":
     for topic in sys.argv[1:]:

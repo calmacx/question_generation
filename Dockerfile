@@ -7,10 +7,11 @@ RUN pip install torch --no-cache-dir
 RUN pip install pymongo
 RUN pip install python-dotenv
 RUN pip install wikipedia
+RUN pip install pandas
 
 WORKDIR /nlp/
 COPY ./ /nlp/
 #RUN mv /nlp/data/cache /root/.cache
 
-RUN python run_wikipedia.py "Cocker Spaniel"
+RUN python run_wikipedia.py "Cactus" 
 CMD ["python","run_custom.py"]
